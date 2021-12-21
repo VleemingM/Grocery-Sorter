@@ -13,6 +13,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Build
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Modifier
@@ -21,8 +22,11 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.google.android.material.appbar.AppBarLayout
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 import nl.vleeming.grocerysorter.database.model.GroceryModel
+import nl.vleeming.grocerysorter.screen.DrawerScreen
 import nl.vleeming.grocerysorter.ui.theme.GrocerySorterTheme
 import nl.vleeming.grocerysorter.viewmodel.AddGroceryViewModel
 
@@ -61,7 +65,29 @@ fun DefaultPreview() {
 @Composable
 fun MainScreen(groceryViewModel: AddGroceryViewModel = hiltViewModel()) {
     val list = groceryViewModel.groceries.observeAsState(initial = emptyList())
+    val scaffoldState = rememberScaffoldState()
+    val scope = rememberCoroutineScope()
     Scaffold(
+        scaffoldState = scaffoldState,
+        topBar = {
+            TopAppBar(
+                title = {BasicText(text = "Groceries")},
+
+                navigationIcon = {
+                    IconButton(onClick = {
+                        scope.launch {
+                            scaffoldState.drawerState.apply {
+                                if (isOpen) close() else open()
+                            }
+                        }
+                    }) {
+                        Icon(imageVector = Icons.Default.Add, contentDescription = "")}
+                    }
+
+            )
+
+        },
+        drawerContent = { DrawerScreen() },
         floatingActionButton = { AddGroceryFab() },
         content = { GroceryList(groceryList = list.value) }
     )

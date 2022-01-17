@@ -4,6 +4,7 @@ import androidx.lifecycle.LiveData
 import kotlinx.coroutines.flow.Flow
 import nl.vleeming.grocerysorter.database.dao.GroceryDao
 import nl.vleeming.grocerysorter.database.model.GroceryModel
+import nl.vleeming.grocerysorter.database.model.ShopModel
 import javax.inject.Inject
 
 class GroceryRepository @Inject constructor(private val groceryDao: GroceryDao) {
@@ -18,4 +19,5 @@ class GroceryRepository @Inject constructor(private val groceryDao: GroceryDao) 
         groceryDao.deleteGrocery(groceryModel)
 
     fun getAllGroceries(): Flow<List<GroceryModel>> = groceryDao.getAllGroceries()
+
 }

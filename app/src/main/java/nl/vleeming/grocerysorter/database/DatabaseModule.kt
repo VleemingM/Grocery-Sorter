@@ -8,6 +8,7 @@ import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import nl.vleeming.grocerysorter.database.dao.GroceryDao
+import nl.vleeming.grocerysorter.database.dao.ShopDao
 import javax.inject.Singleton
 
 
@@ -17,6 +18,11 @@ class DatabaseModule {
     @Provides
     fun provideGroceryDao(groceryDatabase: GroceryDatabase): GroceryDao{
         return groceryDatabase.groceryDao()
+    }
+
+    @Provides
+    fun provideShopDao(groceryDatabase: GroceryDatabase): ShopDao{
+        return groceryDatabase.shopDao()
     }
 
     @Provides

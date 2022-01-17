@@ -1,20 +1,30 @@
 package nl.vleeming.grocerysorter.screen
 
-import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material.icons.outlined.Place
 import androidx.compose.material.icons.outlined.ShoppingCart
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import kotlinx.coroutines.launch
+import androidx.navigation.NavController
+
+sealed class DrawerScreens(val title: String, val route: String) {
+    object Groceries : DrawerScreens("Groceries","groceries")
+    object Shop : DrawerScreens("Shop","shop")
+}
+
+private val screens = listOf(
+    DrawerScreens.Groceries,
+    DrawerScreens.Shop
+)
 
 
 @Preview(showBackground = true)
@@ -24,27 +34,27 @@ fun DrawerPreview() {
     Scaffold(
         scaffoldState = scaffoldState,
         drawerContent = {
-            DrawerScreen()
+            DrawerScreen(onDestinationClicked = {})
         }) {
 
     }
 }
 
 @Composable
-fun DrawerScreen() {
+fun DrawerScreen(
+    modifier: Modifier = Modifier,
+    onDestinationClicked: (route: String) -> Unit
+) {
     Text("Groceries", modifier = Modifier.padding(16.dp))
     Divider()
-    Row(Modifier.padding(vertical = 4.dp)) {
-        Icon(imageVector = Icons.Outlined.ShoppingCart, contentDescription = "", modifier = Modifier.padding(vertical = 8.dp))
-        TextButton(onClick = { /*TODO*/ }) {
-            BasicText(text = "Groceries")
-        }
-    }
-    Divider()
-    Row(Modifier.padding(vertical = 4.dp)) {
-        Icon(imageVector = Icons.Outlined.Place, contentDescription = "",modifier = Modifier.padding(vertical = 8.dp))
-        TextButton(onClick = { /*TODO*/ }) {
-            BasicText(text = "Shops")
-        }
+
+    screens.forEach{ screen->
+        Spacer(Modifier.height(24.dp))
+        Text(
+            text = screen.title,
+            style = MaterialTheme.typography.h4,
+            modifier = Modifier.clickable {
+                onDestinationClicked(screen.route)
+            })
     }
 }

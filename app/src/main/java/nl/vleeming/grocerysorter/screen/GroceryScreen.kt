@@ -23,19 +23,9 @@ import nl.vleeming.grocerysorter.database.model.ShopModel
 import nl.vleeming.grocerysorter.viewmodel.AddGroceryViewModel
 
 @Composable
-fun GroceryScreen(groceryViewModel: AddGroceryViewModel = hiltViewModel(), openDrawer: () -> Unit) {
+fun GroceryScreen(groceryViewModel: AddGroceryViewModel = hiltViewModel()) {
     val list = groceryViewModel.groceries.observeAsState(initial = emptyList())
-    Scaffold(
-        topBar = {
-            TopBar(
-                title = "Groceries",
-                buttonIcon = Icons.Filled.Menu,
-                onButtonClicked = { openDrawer() }
-            )
-        },
-        floatingActionButton = { AddGroceryFab() },
-        content = { GroceryList(groceryList = list.value) }
-    )
+    GroceryList(groceryList = list.value)
 }
 
 @Composable
@@ -108,14 +98,20 @@ fun AddGroceryComposable(groceryViewModel: AddGroceryViewModel = hiltViewModel()
             groceryViewModel.productName.value = it.text
         },
         label = { Text("Enter product") })
-    DropdownMenu(expanded = false, onDismissRequest = { /*TODO*/ },) {
-        ShopList(list = listOf(ShopModel(shop="Jumbo"),ShopModel(shop="AH"),ShopModel(shop="Boni")))
+    DropdownMenu(expanded = false, onDismissRequest = { /*TODO*/ }) {
+        ShopList(
+            list = listOf(
+                ShopModel(shop = "Jumbo"),
+                ShopModel(shop = "AH"),
+                ShopModel(shop = "Boni")
+            )
+        )
     }
 
 }
 
 @Composable
-fun ShopList(list: List<ShopModel>){
+fun ShopList(list: List<ShopModel>) {
     list.forEach {
         SimpleRow(title = it.shop)
     }

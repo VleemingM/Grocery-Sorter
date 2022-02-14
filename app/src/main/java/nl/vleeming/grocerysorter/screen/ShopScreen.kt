@@ -14,18 +14,12 @@ import nl.vleeming.grocerysorter.TopBar
 
 
 @Composable
-fun ShopScreen(openDrawer: () -> Unit){
-    Column(modifier = Modifier.fillMaxSize()) {
-        TopBar(
-            title = "Account",
-            buttonIcon = Icons.Filled.Menu,
-            onButtonClicked = { openDrawer() }
-        )
-        Column(
-            modifier = Modifier.fillMaxSize(),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally) {
-            Text(text = "Account.", style = MaterialTheme.typography.h4)
-        }
+fun ShopScreen() {
+    Column(
+        modifier = Modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text(text = "Account.", style = MaterialTheme.typography.h4)
     }
 }

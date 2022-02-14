@@ -4,6 +4,8 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.material.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Menu
 import androidx.compose.runtime.*
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.tooling.preview.Preview
@@ -69,7 +71,7 @@ fun MainScreen() {
                         scope.launch {
                             drawerState.close()
                         }
-                        navController.navigate(route){
+                        navController.navigate(route) {
                             popUpTo(navController.graph.startDestinationId)
                             launchSingleTop = true
                         }
@@ -77,25 +79,30 @@ fun MainScreen() {
                 )
             }
         ) {
-            NavHost(
-                navController = navController,
-                startDestination = DrawerScreens.Groceries.route
-            ) {
-                composable(DrawerScreens.Groceries.route) {
-                    GroceryScreen(
-                        openDrawer = {
-                            openDrawer()
-                        }
+            Scaffold(
+                topBar = {
+                    TopBar(
+                        title = "Groceries",
+                        buttonIcon = Icons.Filled.Menu,
+                        onButtonClicked = { openDrawer() }
                     )
-                }
-                composable(DrawerScreens.Shop.route) {
-                    ShopScreen(
-                        openDrawer = {
-                            openDrawer()
+                },
+                floatingActionButton = { AddGroceryFab() },
+                content = {
+                    NavHost(
+                        navController = navController,
+                        startDestination = DrawerScreens.Groceries.route
+                    ) {
+                        composable(DrawerScreens.Groceries.route) {
+                            GroceryScreen()
                         }
-                    )
+                        composable(DrawerScreens.Shop.route) {
+                            ShopScreen()
+                        }
+                    }
                 }
-            }
+            )
+
         }
     }
 }

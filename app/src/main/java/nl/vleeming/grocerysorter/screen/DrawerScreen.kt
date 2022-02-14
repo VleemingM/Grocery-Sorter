@@ -15,6 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import androidx.navigation.NavDestination
 
 sealed class DrawerScreens(val title: String, val route: String) {
     object Groceries : DrawerScreens("Groceries","groceries")
@@ -56,5 +57,13 @@ fun DrawerScreen(
             modifier = Modifier.clickable {
                 onDestinationClicked(screen.route)
             })
+    }
+}
+
+@Composable
+fun GetAddItemDialogForCurrentDestination(navDestination: NavDestination?) {
+    return when (screens.first { it.route == navDestination?.route }){
+        DrawerScreens.Groceries -> AddGroceryComposable()
+        DrawerScreens.Shop -> AddShopComposable()
     }
 }

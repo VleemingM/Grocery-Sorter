@@ -23,7 +23,7 @@ import nl.vleeming.grocerysorter.database.model.ShopModel
 import nl.vleeming.grocerysorter.viewmodel.AddGroceryViewModel
 
 @Composable
-fun GroceryScreen(groceryViewModel: AddGroceryViewModel = hiltViewModel()) {
+fun GroceryScreen(groceryViewModel: AddGroceryViewModel = hiltViewModel(),) {
     val list = groceryViewModel.groceries.observeAsState(initial = emptyList())
     GroceryList(groceryList = list.value)
 }
@@ -39,7 +39,7 @@ fun GroceryList(groceryList: List<GroceryModel>) {
 
 @Preview(showBackground = true)
 @Composable
-fun GroceryRowPreview() {
+private fun GroceryRowPreview() {
     SimpleRow(GroceryModel(product = "DIT IS EEN PRODUCT :-)").product)
 }
 
@@ -58,32 +58,6 @@ fun SimpleRow(title: String) {
     }
 }
 
-@Composable
-fun AddGroceryFab(groceryViewModel: AddGroceryViewModel = hiltViewModel()) {
-    val openDialog = remember {
-        mutableStateOf(false)
-    }
-    FloatingActionButton(onClick = {
-        openDialog.value = true
-    }) { Icon(Icons.Filled.Add, "") }
-    if (openDialog.value) {
-        AlertDialog(onDismissRequest = {},
-            title = { Text(text = "Dialog title") },
-            text =
-            { AddGroceryComposable() },
-            confirmButton = {
-                Button(onClick = {
-                    openDialog.value = false
-                    groceryViewModel.addGrocery(GroceryModel(product = groceryViewModel.productName.value!!))
-                }) { Text(text = "Add grocery") }
-            },
-            dismissButton = {
-                Button(onClick = {
-                    openDialog.value = false
-                }) { Text(text = "Cancel") }
-            })
-    }
-}
 
 
 @Composable
@@ -98,21 +72,15 @@ fun AddGroceryComposable(groceryViewModel: AddGroceryViewModel = hiltViewModel()
             groceryViewModel.productName.value = it.text
         },
         label = { Text("Enter product") })
-    DropdownMenu(expanded = false, onDismissRequest = { /*TODO*/ }) {
-        ShopList(
-            list = listOf(
-                ShopModel(shop = "Jumbo"),
-                ShopModel(shop = "AH"),
-                ShopModel(shop = "Boni")
-            )
-        )
-    }
-
+//    DropdownMenu(expanded = false, onDismissRequest = { /*TODO*/ }) {
+//        ShopList(
+//            list = listOf(
+//                ShopModel(shop = "Jumbo"),
+//                ShopModel(shop = "AH"),
+//                ShopModel(shop = "Boni")
+//            )
+//        )
+//    }
 }
 
-@Composable
-fun ShopList(list: List<ShopModel>) {
-    list.forEach {
-        SimpleRow(title = it.shop)
-    }
-}
+

@@ -5,18 +5,24 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.runtime.*
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.window.Dialog
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import nl.vleeming.grocerysorter.database.model.GroceryModel
+import nl.vleeming.grocerysorter.database.model.ShopModel
 import nl.vleeming.grocerysorter.screen.*
 import nl.vleeming.grocerysorter.ui.theme.GrocerySorterTheme
+import nl.vleeming.grocerysorter.viewmodel.AddGroceryViewModel
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -53,7 +59,9 @@ fun DefaultPreview() {
 @Composable
 fun MainScreen() {
     val navController = rememberNavController()
-
+    val openAddItemDialog = remember {
+        mutableStateOf(false)
+    }
     Surface(color = MaterialTheme.colors.background) {
         val drawerState = rememberDrawerState(DrawerValue.Closed)
         val scope = rememberCoroutineScope()
@@ -87,7 +95,12 @@ fun MainScreen() {
                         onButtonClicked = { openDrawer() }
                     )
                 },
-                floatingActionButton = { AddGroceryFab() },
+                floatingActionButton = {
+                    AddItemFab(
+                        openAddItemDialog = openAddItemDialog,
+                        navController = navController
+                    )
+                },
                 content = {
                     NavHost(
                         navController = navController,
@@ -103,6 +116,53 @@ fun MainScreen() {
                 }
             )
 
+        }
+    }
+}
+
+@Composable
+fun AddItemFab(
+    groceryViewModel: AddGroceryViewModel = hiltViewModel(),
+    openAddItemDialog: MutableState<Boolean>,
+    navController: NavController
+) {
+    FloatingActionButton(onClick = {
+        openAddItemDialog.value = true
+    }) { Icon(Icons.Filled.Add, "") }
+    if (openAddItemDialog.value) {
+        //Refactor this maybe?
+        if (navController.currentDestination?.route == DrawerScreens.Groceries.route) {
+            AlertDialog(onDismissRequest = {},
+                title = { Text(text = "Dialog title") },
+                text =
+                { AddGroceryComposable() },
+                confirmButton = {
+                    Button(onClick = {
+                        openAddItemDialog.value = false
+                        groceryViewModel.addGrocery(GroceryModel(product = groceryViewModel.productName.value!!))
+                    }) { Text(text = "Add grocery") }
+                },
+                dismissButton = {
+                    Button(onClick = {
+                        openAddItemDialog.value = false
+                    }) { Text(text = "Cancel") }
+                })
+        } else if (navController.currentDestination?.route == DrawerScreens.Shop.route) {
+            AlertDialog(onDismissRequest = {},
+                title = { Text(text = "Dialog title") },
+                text =
+                { AddShopComposable() },
+                confirmButton = {
+                    Button(onClick = {
+                        openAddItemDialog.value = false
+                        groceryViewModel.addShop(ShopModel(shop = groceryViewModel.shopName.value!!))
+                    }) { Text(text = "Add shop") }
+                },
+                dismissButton = {
+                    Button(onClick = {
+                        openAddItemDialog.value = false
+                    }) { Text(text = "Cancel") }
+                })
         }
     }
 }

@@ -17,6 +17,10 @@ interface GroceryDao {
     @Query("SELECT * FROM grocery_table")
     fun getAllGroceries(): Flow<List<GroceryModel>>
 
+
+    @Query("SELECT * FROM grocery_table WHERE shop IS :shopId")
+    fun getGroceriesForShop(shopId: Int): Flow<List<GroceryModel>>
+
     @Delete
     suspend fun deleteGrocery(groceryModel: GroceryModel)
 }

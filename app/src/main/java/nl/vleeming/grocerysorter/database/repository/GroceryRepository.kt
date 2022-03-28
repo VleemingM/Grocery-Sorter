@@ -20,4 +20,6 @@ class GroceryRepository @Inject constructor(private val groceryDao: GroceryDao) 
 
     fun getAllGroceries(): Flow<List<GroceryModel>> = groceryDao.getAllGroceries()
 
+    fun getGroceriesForShop(shopId: Int): Flow<List<GroceryModel>> = groceryDao.getGroceriesForShop(shopId)
+
 }

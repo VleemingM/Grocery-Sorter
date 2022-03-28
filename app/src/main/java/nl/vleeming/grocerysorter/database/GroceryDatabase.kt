@@ -15,7 +15,7 @@ import nl.vleeming.grocerysorter.database.model.ShopModel
 
 @Database(
     entities = [GroceryModel::class, ShopModel::class],
-    version = 1,
+    version = 1
 )
 
 abstract class GroceryDatabase : RoomDatabase() {

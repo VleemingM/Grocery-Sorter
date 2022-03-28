@@ -22,5 +22,5 @@ data class GroceryModel(
     @ColumnInfo(name = "product")
     val product: String,
     @ColumnInfo(index = true)
-    val shop: String? = null
+    val shop: Int? = null
 )

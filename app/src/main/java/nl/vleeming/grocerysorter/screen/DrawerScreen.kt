@@ -19,7 +19,9 @@ import androidx.navigation.NavDestination
 
 sealed class DrawerScreens(val title: String, val route: String) {
     object Groceries : DrawerScreens("Groceries","groceries")
+    object AddGrocery : DrawerScreens("Add Grocery","addGrocery")
     object Shop : DrawerScreens("Shop","shop")
+    object AddShop : DrawerScreens("Add Shop","addShop")
 }
 
 private val screens = listOf(
@@ -57,13 +59,5 @@ fun DrawerScreen(
             modifier = Modifier.clickable {
                 onDestinationClicked(screen.route)
             })
-    }
-}
-
-@Composable
-fun GetAddItemDialogForCurrentDestination(navDestination: NavDestination?) {
-    return when (screens.first { it.route == navDestination?.route }){
-        DrawerScreens.Groceries -> AddGroceryComposable()
-        DrawerScreens.Shop -> AddShopComposable()
     }
 }

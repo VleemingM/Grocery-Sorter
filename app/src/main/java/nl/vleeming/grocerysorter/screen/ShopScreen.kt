@@ -4,7 +4,9 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.Button
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.material.TextField
@@ -17,6 +19,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.hilt.navigation.compose.hiltViewModel
 import nl.vleeming.grocerysorter.TopBar
+import nl.vleeming.grocerysorter.database.model.GroceryModel
 import nl.vleeming.grocerysorter.database.model.ShopModel
 import nl.vleeming.grocerysorter.viewmodel.AddGroceryViewModel
 
@@ -52,4 +55,9 @@ fun AddShopComposable(groceryViewModel: AddGroceryViewModel = hiltViewModel()) {
             groceryViewModel.shopName.value = it.text
         },
         label = { Text("Enter shop name") })
+    Button(onClick = {
+        groceryViewModel.addShop(ShopModel(shop = text.text))
+    }) {
+        BasicText(text = "Save")
+    }
 }

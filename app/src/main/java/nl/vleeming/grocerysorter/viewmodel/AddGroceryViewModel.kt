@@ -17,7 +17,6 @@ class AddGroceryViewModel @Inject constructor(
     private val shopRepository: ShopRepository
     ) : ViewModel() {
 
-    val productName = MutableLiveData<String>()
     val shopName = MutableLiveData<String>()
     fun addGrocery(groceryModel: GroceryModel) {
         viewModelScope.launch(Dispatchers.IO) {
@@ -32,5 +31,6 @@ class AddGroceryViewModel @Inject constructor(
 
     val groceries = groceryRepository.getAllGroceries().asLiveData()
     val shops = shopRepository.getAllShops().asLiveData()
+    val groceriesForShop = groceryRepository.getGroceriesForShop(1).asLiveData()
 
 }

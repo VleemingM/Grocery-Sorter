@@ -97,7 +97,6 @@ fun MainScreen() {
                 },
                 floatingActionButton = {
                     AddItemFab(
-                        openAddItemDialog = openAddItemDialog,
                         navController = navController
                     )
                 },
@@ -112,6 +111,12 @@ fun MainScreen() {
                         composable(DrawerScreens.Shop.route) {
                             ShopScreen()
                         }
+                        composable(DrawerScreens.AddGrocery.route){
+                            AddGroceryComposable()
+                        }
+                        composable(DrawerScreens.AddShop.route){
+                            AddShopComposable()
+                        }
                     }
                 }
             )
@@ -122,49 +127,15 @@ fun MainScreen() {
 
 @Composable
 fun AddItemFab(
-    groceryViewModel: AddGroceryViewModel = hiltViewModel(),
-    openAddItemDialog: MutableState<Boolean>,
     navController: NavController
 ) {
     FloatingActionButton(onClick = {
-        openAddItemDialog.value = true
-    }) { Icon(Icons.Filled.Add, "") }
-    if (openAddItemDialog.value) {
-        //Refactor this maybe?
         if (navController.currentDestination?.route == DrawerScreens.Groceries.route) {
-            AlertDialog(onDismissRequest = {},
-                title = { Text(text = "Dialog title") },
-                text =
-                { AddGroceryComposable() },
-                confirmButton = {
-                    Button(onClick = {
-                        openAddItemDialog.value = false
-                        groceryViewModel.addGrocery(GroceryModel(product = groceryViewModel.productName.value!!))
-                    }) { Text(text = "Add grocery") }
-                },
-                dismissButton = {
-                    Button(onClick = {
-                        openAddItemDialog.value = false
-                    }) { Text(text = "Cancel") }
-                })
+            navController.navigate(DrawerScreens.AddGrocery.route)
         } else if (navController.currentDestination?.route == DrawerScreens.Shop.route) {
-            AlertDialog(onDismissRequest = {},
-                title = { Text(text = "Dialog title") },
-                text =
-                { AddShopComposable() },
-                confirmButton = {
-                    Button(onClick = {
-                        openAddItemDialog.value = false
-                        groceryViewModel.addShop(ShopModel(shop = groceryViewModel.shopName.value!!))
-                    }) { Text(text = "Add shop") }
-                },
-                dismissButton = {
-                    Button(onClick = {
-                        openAddItemDialog.value = false
-                    }) { Text(text = "Cancel") }
-                })
+            navController.navigate(DrawerScreens.AddShop.route)
         }
-    }
+    }) { Icon(Icons.Filled.Add, "") }
 }
 
 @Composable

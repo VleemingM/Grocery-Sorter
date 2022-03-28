@@ -92,6 +92,10 @@ dependencies {
     implementation "android.arch.persistence.room:runtime:1.1.1"
     kapt "android.arch.persistence.room:compiler:1.1.1"
 
+    //Compose accomponist
+    implementation "com.google.accompanist:accompanist-pager:0.23.0" // Pager
+    implementation "com.google.accompanist:accompanist-pager-indicators:0.23.0" // Pager Indicators
+
 
 
 

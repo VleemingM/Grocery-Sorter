@@ -73,7 +73,6 @@ fun MainScreen() {
     }
     Surface(color = MaterialTheme.colors.background) {
         val drawerState = rememberDrawerState(DrawerValue.Closed)
-        val shopTabState = rememberPagerState()
         val scope = rememberCoroutineScope()
         val openDrawer = {
             scope.launch {
@@ -105,9 +104,6 @@ fun MainScreen() {
                             buttonIcon = Icons.Filled.Menu,
                             onButtonClicked = { openDrawer() }
                         )
-                        if (navController.currentDestination == null || navController.currentDestination?.route == DrawerScreens.Groceries.route) {
-                            ShowShopTabs(shopTabState)
-                        }
                     }
                 },
                 floatingActionButton = {
@@ -140,53 +136,7 @@ fun MainScreen() {
     }
 }
 
-@OptIn(ExperimentalPagerApi::class)
-@Composable
-fun ShowShopTabs(shopTabState: PagerState, shops: AddGroceryViewModel = hiltViewModel()) {
-    val list = shops.shops.observeAsState(initial = emptyList())
-    if (list.value.size > 1) {
-        ShowShopTabs(shopTabState = shopTabState, list.value)
-    }
-}
 
-@OptIn(ExperimentalPagerApi::class)
-@Composable
-fun ShowShopTabs(shopTabState: PagerState, shops: List<ShopModel>) {
-    val scope = rememberCoroutineScope()
-    ScrollableTabRow(
-        selectedTabIndex = shopTabState.currentPage,
-        contentColor = Color.White,
-       ) {
-        shops.forEachIndexed { index, shopModel ->
-            Tab(
-                text = { Text(shopModel.shop) },
-                selected = shopTabState.currentPage == index,
-                onClick = {
-                    scope.launch {
-                        shopTabState.animateScrollToPage(index)
-                    }
-                },
-            )
-        }
-    }
-}
-
-@OptIn(ExperimentalPagerApi::class)
-@Preview(showBackground = true)
-@Composable
-fun ShowShopTabsPreview() {
-    val shopTabState = rememberPagerState()
-    ShowShopTabs(
-        shopTabState = shopTabState, shops = listOf(
-            ShopModel(shop = "AH"),
-            ShopModel(shop = "AH"),
-            ShopModel(shop = "AH"),
-            ShopModel(shop = "AH"),
-            ShopModel(shop = "AH"),
-            ShopModel(shop = "AH"),
-        )
-    )
-}
 
 @Composable
 fun AddItemFab(

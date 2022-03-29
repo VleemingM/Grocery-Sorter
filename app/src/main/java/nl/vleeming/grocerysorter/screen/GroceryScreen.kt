@@ -17,13 +17,45 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.LiveData
+import com.google.accompanist.pager.ExperimentalPagerApi
+import com.google.accompanist.pager.HorizontalPager
+import com.google.accompanist.pager.PagerState
+import com.google.accompanist.pager.rememberPagerState
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.launch
 import nl.vleeming.grocerysorter.database.model.GroceryModel
+import nl.vleeming.grocerysorter.database.model.ShopModel
 import nl.vleeming.grocerysorter.viewmodel.AddGroceryViewModel
 
+@OptIn(ExperimentalPagerApi::class)
 @Composable
 fun GroceryScreen(groceryViewModel: AddGroceryViewModel = hiltViewModel()) {
-    val list = groceryViewModel.groceriesForShop.observeAsState(initial = emptyList())
-    GroceryList(groceryList = list.value)
+    val shopList = groceryViewModel.shops.observeAsState(initial = emptyList())
+    val list = groceryViewModel.groceries.observeAsState(initial = emptyList())
+    if (shopList.value.size > 1) {
+        //Add one for the "All" shop
+        val shopTabState = rememberPagerState()
+        Column {
+            ShowShopTabs(shopTabState = shopTabState, shopList.value)
+            HorizontalPager(
+                count = shopList.value.count(),
+                state = shopTabState,
+                modifier = Modifier.fillMaxHeight(1f),
+                verticalAlignment = Alignment.Top
+            ) { position ->
+                    val shoppingListForShop = groceryViewModel.getGroceriesForShopId(
+                        shopList.value[position].id!!
+                    ).observeAsState(initial = emptyList())
+                    GroceryList(
+                        groceryList = shoppingListForShop.value
+                    )
+            }
+        }
+    } else {
+        GroceryList(groceryList = list.value)
+    }
 }
 
 @Composable
@@ -44,7 +76,7 @@ private fun GroceryRowPreview() {
 @Composable
 fun SimpleRow(title: String) {
     Column {
-        BasicText(
+        Text(
             text = title,
             modifier = Modifier.padding(top = 4.dp)
         )
@@ -122,4 +154,42 @@ fun AddGroceryComposable(groceryViewModel: AddGroceryViewModel = hiltViewModel()
 
 }
 
+@OptIn(ExperimentalPagerApi::class)
+@Composable
+fun ShowShopTabs(shopTabState: PagerState, shops: List<ShopModel>) {
+    val scope = rememberCoroutineScope()
+    ScrollableTabRow(
+        selectedTabIndex = shopTabState.currentPage,
+        contentColor = Color.White,
+    ) {
+        shops.forEachIndexed { index, shopModel ->
+            Tab(
+                text = { Text(shopModel.shop) },
+                selected = shopTabState.currentPage == index,
+                onClick = {
+                    scope.launch {
+                        shopTabState.animateScrollToPage(index)
+                    }
+                },
+            )
+        }
+    }
+}
+
+@OptIn(ExperimentalPagerApi::class)
+@Preview(showBackground = true)
+@Composable
+fun ShowShopTabsPreview() {
+    val shopTabState = rememberPagerState()
+    ShowShopTabs(
+        shopTabState = shopTabState, shops = listOf(
+            ShopModel(shop = "AH"),
+            ShopModel(shop = "AH"),
+            ShopModel(shop = "AH"),
+            ShopModel(shop = "AH"),
+            ShopModel(shop = "AH"),
+            ShopModel(shop = "AH"),
+        )
+    )
+}
 

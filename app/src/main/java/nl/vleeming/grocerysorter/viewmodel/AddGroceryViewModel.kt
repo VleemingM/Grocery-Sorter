@@ -4,6 +4,8 @@ import android.util.Log
 import androidx.lifecycle.*
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import nl.vleeming.grocerysorter.database.model.GroceryModel
 import nl.vleeming.grocerysorter.database.model.ShopModel
@@ -23,6 +25,10 @@ class AddGroceryViewModel @Inject constructor(
             groceryRepository.insertGroceries(groceryModel)
         }
     }
+
+    fun getGroceriesForShopId(id: Int): LiveData<List<GroceryModel>> {
+           return groceryRepository.getGroceriesForShop(id).asLiveData()
+    }
     fun addShop(shopModel: ShopModel){
         viewModelScope.launch(Dispatchers.IO) {
             shopRepository.insertShop(shopModel)
@@ -31,6 +37,5 @@ class AddGroceryViewModel @Inject constructor(
 
     val groceries = groceryRepository.getAllGroceries().asLiveData()
     val shops = shopRepository.getAllShops().asLiveData()
-    val groceriesForShop = groceryRepository.getGroceriesForShop(1).asLiveData()
 
 }

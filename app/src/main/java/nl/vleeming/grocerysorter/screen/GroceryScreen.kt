@@ -7,7 +7,10 @@ import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.rounded.LinearScale
+import androidx.compose.material.icons.sharp.AdUnits
+import androidx.compose.material.icons.sharp.LinearScale
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
@@ -17,13 +20,10 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.LiveData
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.PagerState
 import com.google.accompanist.pager.rememberPagerState
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import nl.vleeming.grocerysorter.database.model.GroceryModel
 import nl.vleeming.grocerysorter.database.model.ShopModel
@@ -45,12 +45,16 @@ fun GroceryScreen(groceryViewModel: AddGroceryViewModel = hiltViewModel()) {
                 modifier = Modifier.fillMaxHeight(1f),
                 verticalAlignment = Alignment.Top
             ) { position ->
-                    val shoppingListForShop = groceryViewModel.getGroceriesForShopId(
-                        shopList.value[position].id!!
-                    ).observeAsState(initial = emptyList())
-                    GroceryList(
-                        groceryList = shoppingListForShop.value
-                    )
+                val shoppingListForShop = groceryViewModel.getGroceriesForShopId(
+                    shopList.value[position].id!!
+                ).observeAsState(initial = emptyList())
+                GroceryList(
+                    groceryList = shoppingListForShop.value
+                ) { checked, groceryModel ->
+                    if (checked) {
+                        groceryViewModel.deleteGrocery(groceryModel)
+                    }
+                }
             }
         }
     } else {
@@ -59,10 +63,13 @@ fun GroceryScreen(groceryViewModel: AddGroceryViewModel = hiltViewModel()) {
 }
 
 @Composable
-fun GroceryList(groceryList: List<GroceryModel>) {
+fun GroceryList(
+    groceryList: List<GroceryModel>,
+    onCheckboxChecked: ((Boolean, GroceryModel) -> Unit)? = null
+) {
     Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
         groceryList.forEach { grocery ->
-            SimpleRow(grocery.product)
+            GroceryItemRow(grocery, onCheckboxChecked)
         }
     }
 }
@@ -70,7 +77,49 @@ fun GroceryList(groceryList: List<GroceryModel>) {
 @Preview(showBackground = true)
 @Composable
 private fun GroceryRowPreview() {
-    SimpleRow(GroceryModel(product = "DIT IS EEN PRODUCT :-)").product)
+    GroceryItemRow(GroceryModel(product = "DIT IS EEN PRODUCT :-)"))
+}
+
+@Composable
+fun GroceryItemRow(
+    groceryModel: GroceryModel,
+    onCheckboxChecked: ((Boolean, GroceryModel) -> Unit)? = null
+) {
+    Column {
+        Row(
+            modifier = Modifier.padding(top = 4.dp, end = 8.dp, start = 8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Checkbox(checked = false, onCheckedChange = {
+                onCheckboxChecked?.invoke(it, groceryModel)
+            })
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+
+                Text(
+                    text = groceryModel.product
+                )
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Icon(
+                        //Eventually fix this icon
+                        imageVector = Icons.Sharp.LinearScale, contentDescription = "Weight icon",
+                    )
+                    Text(text = "100")
+                }
+            }
+        }
+        Divider(
+            color = Color.Gray,
+            thickness = 1.dp,
+            modifier = Modifier.padding(top = 8.dp)
+        )
+    }
 }
 
 @Composable

@@ -17,7 +17,7 @@ import javax.inject.Inject
 class AddGroceryViewModel @Inject constructor(
     private val groceryRepository: GroceryRepository,
     private val shopRepository: ShopRepository
-    ) : ViewModel() {
+) : ViewModel() {
 
     val shopName = MutableLiveData<String>()
     fun addGrocery(groceryModel: GroceryModel) {
@@ -27,11 +27,18 @@ class AddGroceryViewModel @Inject constructor(
     }
 
     fun getGroceriesForShopId(id: Int): LiveData<List<GroceryModel>> {
-           return groceryRepository.getGroceriesForShop(id).asLiveData()
+        return groceryRepository.getGroceriesForShop(id).asLiveData()
     }
-    fun addShop(shopModel: ShopModel){
+
+    fun addShop(shopModel: ShopModel) {
         viewModelScope.launch(Dispatchers.IO) {
             shopRepository.insertShop(shopModel)
+        }
+    }
+
+    fun deleteGrocery(groceryModel: GroceryModel) {
+        viewModelScope.launch(Dispatchers.IO) {
+            groceryRepository.deleteGroceries(groceryModel)
         }
     }
 

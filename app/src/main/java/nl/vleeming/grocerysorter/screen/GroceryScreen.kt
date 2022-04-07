@@ -1,5 +1,6 @@
 package nl.vleeming.grocerysorter.screen
 
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -8,18 +9,19 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
-import androidx.compose.material.icons.rounded.LinearScale
-import androidx.compose.material.icons.sharp.AdUnits
 import androidx.compose.material.icons.sharp.LinearScale
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavController
+import androidx.navigation.NavHostController
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.PagerState
@@ -31,7 +33,10 @@ import nl.vleeming.grocerysorter.viewmodel.AddGroceryViewModel
 
 @OptIn(ExperimentalPagerApi::class)
 @Composable
-fun GroceryScreen(groceryViewModel: AddGroceryViewModel = hiltViewModel()) {
+fun GroceryScreen(
+    groceryViewModel: AddGroceryViewModel = hiltViewModel(),
+    navController: NavHostController
+) {
     val shopList = groceryViewModel.shops.observeAsState(initial = emptyList())
     val list = groceryViewModel.groceries.observeAsState(initial = emptyList())
     if (shopList.value.size > 1) {
@@ -45,11 +50,14 @@ fun GroceryScreen(groceryViewModel: AddGroceryViewModel = hiltViewModel()) {
                 modifier = Modifier.fillMaxHeight(1f),
                 verticalAlignment = Alignment.Top
             ) { position ->
-                val shoppingListForShop = groceryViewModel.getGroceriesForShopId(
-                    shopList.value[position].id!!
-                ).observeAsState(initial = emptyList())
-                GroceryList(
-                    groceryList = shoppingListForShop.value
+                val shoppingListForShop = shopList.value[position].id?.let {
+                    groceryViewModel.getGroceriesForShopId(
+                        it
+                    ).observeAsState(initial = emptyList())
+                }
+                GroceryListScreen(
+                    navController = navController,
+                    groceryList = shoppingListForShop?.value ?: emptyList()
                 ) { checked, groceryModel ->
                     if (checked) {
                         groceryViewModel.deleteGrocery(groceryModel)
@@ -58,19 +66,31 @@ fun GroceryScreen(groceryViewModel: AddGroceryViewModel = hiltViewModel()) {
             }
         }
     } else {
-        GroceryList(groceryList = list.value)
+        GroceryListScreen(
+            navController = navController,
+            groceryList = list.value
+        ) { checked, groceryModel ->
+            if (checked) {
+                groceryViewModel.deleteGrocery(groceryModel)
+            }
+        }
     }
 }
 
 @Composable
-fun GroceryList(
+fun GroceryListScreen(
+    navController: NavController,
     groceryList: List<GroceryModel>,
     onCheckboxChecked: ((Boolean, GroceryModel) -> Unit)? = null
 ) {
-    Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
-        groceryList.forEach { grocery ->
-            GroceryItemRow(grocery, onCheckboxChecked)
+    if (groceryList.isNotEmpty()) {
+        Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
+            groceryList.forEach { grocery ->
+                GroceryItemRow(grocery, onCheckboxChecked)
+            }
         }
+    } else {
+        AddProductPrompt(navController = navController)
     }
 }
 
@@ -92,7 +112,7 @@ fun GroceryItemRow(
         ) {
             Checkbox(checked = false, onCheckedChange = {
                 onCheckboxChecked?.invoke(it, groceryModel)
-            })
+            }, modifier = Modifier.testTag("groceryCheckBox"))
             Row(
                 modifier = Modifier
                     .fillMaxWidth(),
@@ -149,58 +169,100 @@ fun AddGroceryComposable(groceryViewModel: AddGroceryViewModel = hiltViewModel()
     var text by remember {
         mutableStateOf(TextFieldValue())
     }
+    var textError by remember {
+        mutableStateOf(false)
+    }
     var selectedIndex by remember { mutableStateOf(0) }
     val shopList = groceryViewModel.shops.observeAsState(initial = emptyList())
-    Column {
+    Column(
+        modifier = Modifier
+            .fillMaxHeight()
+            .fillMaxWidth(),
+    ) {
         TextField(
             value = text,
             onValueChange = {
+                if (it.text.isNotEmpty()) {
+                    textError = false
+                }
                 text = it
             },
-            label = { Text("Enter product") })
-        if (shopList.value.isNotEmpty()) {
-            Box(
-                modifier = Modifier
-                    .wrapContentSize(Alignment.TopStart)
-            ) {
-                Row(
-                    modifier = Modifier
-                        .clickable(onClick = { expanded = true })
-                ) {
-                    Text(
-                        shopList.value[selectedIndex].shop
-                    )
-                    Icon(imageVector = Icons.Default.ArrowDropDown, contentDescription = "")
-                }
-                DropdownMenu(
-                    expanded = expanded, onDismissRequest = { expanded = false })
-                {
-                    shopList.value.forEachIndexed { index, s ->
-                        DropdownMenuItem(
-                            onClick = {
-                                selectedIndex = index
-                                expanded = false
-                            },
-                        ) {
-                            SimpleRow(title = s.shop)
-                        }
+            label = { Text("Enter product") },
+            modifier = Modifier
+                .testTag("productTextField")
+                .border(
+                    1.dp, if (textError) {
+                        Color.Red
+                    } else {
+                        Color.LightGray
                     }
-                }
-            }
+                )
+        )
+        if (shopList.value.isNotEmpty()) {
+            ShopPickerComposable(
+                shopList = shopList.value,
+                { expanded = it },
+                expanded,
+                { selectedIndex = it },
+                selectedIndex
+            )
         }
         Button(onClick = {
-            val shop = shopList.value.getOrNull(selectedIndex)
-            val item = GroceryModel(
-                product = text.text,
-                shop = shop?.id
-            )
-            groceryViewModel.addGrocery(item)
-        }) {
+            if (text.text.isNotEmpty()) {
+                val shop = shopList.value.getOrNull(selectedIndex)
+                val item = GroceryModel(
+                    product = text.text,
+                    shop = shop?.id
+                )
+                groceryViewModel.addGrocery(item)
+            } else {
+                textError = true
+            }
+        }, modifier = Modifier.testTag("saveButton")) {
             BasicText(text = "Save")
         }
     }
 
 
+}
+
+@Composable
+fun ShopPickerComposable(
+    shopList: List<ShopModel>,
+    onExpand: (Boolean) -> Unit,
+    expanded: Boolean,
+    selectedIndexChange: (Int) -> Unit,
+    selectedIndex: Int
+) {
+    Box(
+        modifier = Modifier
+            .wrapContentSize(Alignment.TopStart)
+            .testTag("ShopPickerTag")
+    ) {
+        Row(
+            modifier = Modifier
+                .clickable(onClick = { onExpand.invoke(true) })
+        ) {
+            Text(
+                shopList[selectedIndex].shop
+            )
+            Icon(imageVector = Icons.Default.ArrowDropDown, contentDescription = "")
+        }
+        DropdownMenu(
+            expanded = expanded, onDismissRequest = { onExpand.invoke(false) })
+        {
+            shopList.forEachIndexed { index, s ->
+                DropdownMenuItem(
+                    onClick = {
+                        selectedIndexChange.invoke(index)
+                        onExpand.invoke(false)
+                    },
+                ) {
+                    SimpleRow(title = s.shop)
+                }
+            }
+        }
+    }
 }
 
 @OptIn(ExperimentalPagerApi::class)
@@ -210,6 +272,7 @@ fun ShowShopTabs(shopTabState: PagerState, shops: List<ShopModel>) {
     ScrollableTabRow(
         selectedTabIndex = shopTabState.currentPage,
         contentColor = Color.White,
+        modifier = Modifier.testTag("shopTabs")
     ) {
         shops.forEachIndexed { index, shopModel ->
             Tab(
@@ -241,4 +304,3 @@ fun ShowShopTabsPreview() {
         )
     )
 }
-

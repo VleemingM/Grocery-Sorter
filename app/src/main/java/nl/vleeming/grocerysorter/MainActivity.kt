@@ -9,28 +9,18 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.runtime.*
-import androidx.compose.runtime.livedata.observeAsState
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.google.accompanist.pager.ExperimentalPagerApi
-import com.google.accompanist.pager.PagerState
-import com.google.accompanist.pager.pagerTabIndicatorOffset
-import com.google.accompanist.pager.rememberPagerState
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import nl.vleeming.grocerysorter.database.model.GroceryModel
-import nl.vleeming.grocerysorter.database.model.ShopModel
 import nl.vleeming.grocerysorter.screen.*
 import nl.vleeming.grocerysorter.ui.theme.GrocerySorterTheme
-import nl.vleeming.grocerysorter.viewmodel.AddGroceryViewModel
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -58,7 +48,7 @@ fun DefaultPreview() {
     groceryList.add(GroceryModel(product = "Kattenvoer"))
     groceryList.add(GroceryModel(product = "iets anders"))
     Scaffold(
-        content = { GroceryList(groceryList = groceryList) }
+        content = { GroceryListScreen(rememberNavController(),groceryList = groceryList) }
     )
 
 }
@@ -117,7 +107,7 @@ fun MainScreen() {
                         startDestination = DrawerScreens.Groceries.route
                     ) {
                         composable(DrawerScreens.Groceries.route) {
-                            GroceryScreen()
+                            GroceryScreen(navController = navController)
                         }
                         composable(DrawerScreens.Shop.route) {
                             ShopScreen()

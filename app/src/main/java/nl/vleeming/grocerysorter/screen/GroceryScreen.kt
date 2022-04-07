@@ -4,6 +4,8 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CutCornerShape
+import androidx.compose.foundation.shape.ZeroCornerSize
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
@@ -178,6 +180,8 @@ fun AddGroceryComposable(groceryViewModel: AddGroceryViewModel = hiltViewModel()
         modifier = Modifier
             .fillMaxHeight()
             .fillMaxWidth(),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
         TextField(
             value = text,
@@ -188,15 +192,7 @@ fun AddGroceryComposable(groceryViewModel: AddGroceryViewModel = hiltViewModel()
                 text = it
             },
             label = { Text("Enter product") },
-            modifier = Modifier
-                .testTag("productTextField")
-                .border(
-                    1.dp, if (textError) {
-                        Color.Red
-                    } else {
-                        Color.LightGray
-                    }
-                )
+            isError = textError,
         )
         if (shopList.value.isNotEmpty()) {
             ShopPickerComposable(

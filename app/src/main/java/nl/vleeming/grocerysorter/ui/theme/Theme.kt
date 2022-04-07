@@ -54,7 +54,7 @@ fun GrocerySorterTheme(
 @Preview(showBackground = true)
 @Composable
 fun GroceryItemPreview() {
-    MaterialTheme {
+    GrocerySorterTheme {
         GroceryListScreen(
             navController = rememberNavController(),
             groceryList =

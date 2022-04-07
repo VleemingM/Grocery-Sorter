@@ -145,8 +145,8 @@ fun GroceryItemRow(
 }
 
 @Composable
-fun SimpleRow(title: String) {
-    Column {
+fun SimpleRow(title: String, modifier: Modifier) {
+    Column(modifier = modifier) {
         Text(
             text = title,
             modifier = Modifier.padding(top = 4.dp)
@@ -234,6 +234,7 @@ fun ShopPickerComposable(
         modifier = Modifier
             .wrapContentSize(Alignment.TopStart)
             .testTag("ShopPickerTag")
+            .padding(4.dp)
     ) {
         Row(
             modifier = Modifier
@@ -254,7 +255,7 @@ fun ShopPickerComposable(
                         onExpand.invoke(false)
                     },
                 ) {
-                    SimpleRow(title = s.shop)
+                    SimpleRow(title = s.shop,Modifier)
                 }
             }
         }

@@ -32,7 +32,7 @@ fun ShopScreen(groceryViewModel: AddGroceryViewModel = hiltViewModel()) {
 @Composable
 fun ShopList(shops: List<ShopModel>) {
     shops.forEach {
-        SimpleRow(title = it.shop)
+        SimpleRow(title = it.shop, Modifier)
     }
 }
 

@@ -6,6 +6,7 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.darkColors
 import androidx.compose.material.lightColors
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.compose.rememberNavController
 import nl.vleeming.grocerysorter.database.model.GroceryModel
@@ -14,13 +15,15 @@ import nl.vleeming.grocerysorter.screen.GroceryListScreen
 private val DarkColorPalette = darkColors(
     primary = Pink300Dark,
     primaryVariant = Pink300,
-    secondary = Teal300Dark
+    secondary = Teal300Dark,
+    onPrimary = Color.White,
+    onSecondary = Color.White,
 )
 
 private val LightColorPalette = lightColors(
     primary = Pink300Light,
     primaryVariant = Pink300,
-    secondary = Teal300Light
+    secondary = Teal300Light,
 
     /* Other default colors to override
     background = Color.White,

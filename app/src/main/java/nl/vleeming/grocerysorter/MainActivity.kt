@@ -98,13 +98,13 @@ fun MainScreen() {
                 },
                 floatingActionButton = {
                     AddItemFab(
-                        navController = navController
+                        navController = navController,
                     )
                 },
                 content = {
                     NavHost(
                         navController = navController,
-                        startDestination = DrawerScreens.Groceries.route
+                        startDestination = DrawerScreens.AddShop.route
                     ) {
                         composable(DrawerScreens.Groceries.route) {
                             GroceryScreen(navController = navController)
@@ -154,6 +154,6 @@ fun TopBar(title: String = "", buttonIcon: ImageVector, onButtonClicked: () -> U
                 Icon(buttonIcon, contentDescription = "")
             }
         },
-        backgroundColor = MaterialTheme.colors.primaryVariant
+        backgroundColor = MaterialTheme.colors.primaryVariant,
     )
 }

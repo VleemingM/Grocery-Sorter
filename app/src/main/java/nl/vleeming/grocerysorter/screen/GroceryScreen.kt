@@ -1,10 +1,8 @@
 package nl.vleeming.grocerysorter.screen
 
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CutCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
@@ -20,8 +18,6 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.navigation.NavController
-import androidx.navigation.NavHostController
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.PagerState
@@ -34,54 +30,56 @@ import nl.vleeming.grocerysorter.viewmodel.AddGroceryViewModel
 @OptIn(ExperimentalPagerApi::class)
 @Composable
 fun GroceryScreen(
-    groceryViewModel: AddGroceryViewModel = hiltViewModel(),
-    navController: NavHostController
+    shopList: List<ShopModel>,
+    groceryList: List<GroceryModel>,
+    onGroceryItemChecked: (GroceryModel) -> Unit,
+    onNavigateToAddProduct: () -> Unit
 ) {
-    val shopList = groceryViewModel.shops.observeAsState(initial = emptyList())
-    val list = groceryViewModel.groceries.observeAsState(initial = emptyList())
-    if (shopList.value.size > 1) {
+    if (shopList.size > 1) {
         //Add one for the "All" shop
         val shopTabState = rememberPagerState()
         Column {
-            ShowShopTabs(shopTabState = shopTabState, shopList.value)
+            ShowShopTabs(shopTabState = shopTabState, shopList)
             HorizontalPager(
-                count = shopList.value.count(),
+                count = shopList.count(),
                 state = shopTabState,
                 modifier = Modifier.fillMaxHeight(1f),
                 verticalAlignment = Alignment.Top
             ) { position ->
-                val shoppingListForShop = shopList.value[position].id?.let {
-                    groceryViewModel.getGroceriesForShopId(
-                        it
-                    ).observeAsState(initial = emptyList())
-                }
-                GroceryListScreen(
-                    navController = navController,
-                    groceryList = shoppingListForShop?.value ?: emptyList()
-                ) { checked, groceryModel ->
-                    if (checked) {
-                        groceryViewModel.deleteGrocery(groceryModel)
+                val shoppingListForShop =
+                    groceryList.filter {
+                        val shopId =shopList[position].id
+                        (it.shop?.equals(shopId) ?: false) || it.id == null
                     }
+
+                GroceryListScreen(
+                    groceryList = shoppingListForShop, { checked, groceryModel ->
+                        if (checked) {
+                            onGroceryItemChecked(groceryModel)
+                        }
+                    }) {
+                    onNavigateToAddProduct()
                 }
             }
         }
     } else {
         GroceryListScreen(
-            navController = navController,
-            groceryList = list.value
-        ) { checked, groceryModel ->
-            if (checked) {
-                groceryViewModel.deleteGrocery(groceryModel)
-            }
+            groceryList = groceryList,
+            { checked, groceryModel ->
+                if (checked) {
+                    onGroceryItemChecked(groceryModel)
+                }
+            }) {
+            onNavigateToAddProduct()
         }
     }
 }
 
 @Composable
 fun GroceryListScreen(
-    navController: NavController,
     groceryList: List<GroceryModel>,
-    onCheckboxChecked: ((Boolean, GroceryModel) -> Unit)? = null
+    onCheckboxChecked: ((Boolean, GroceryModel) -> Unit),
+    onNavigateToAddProduct: () -> Unit
 ) {
     if (groceryList.isNotEmpty()) {
         Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
@@ -90,7 +88,7 @@ fun GroceryListScreen(
             }
         }
     } else {
-        AddProductPrompt(navController = navController)
+        AddProductPrompt(onNavigateToAddProduct)
     }
 }
 
@@ -160,11 +158,15 @@ fun SimpleRow(title: String, modifier: Modifier) {
 @Composable
 @Preview
 fun AddGroceryComposablePreview() {
-    AddGroceryComposable()
+    AddGroceryComposable(emptyList(),
+        {})
 }
 
 @Composable
-fun AddGroceryComposable(groceryViewModel: AddGroceryViewModel = hiltViewModel()) {
+fun AddGroceryComposable(
+    shopList: List<ShopModel>,
+    onAddGrocery: (GroceryModel) -> Unit
+) {
     var expanded by remember { mutableStateOf(false) }
     var text by remember {
         mutableStateOf(TextFieldValue())
@@ -173,7 +175,6 @@ fun AddGroceryComposable(groceryViewModel: AddGroceryViewModel = hiltViewModel()
         mutableStateOf(false)
     }
     var selectedIndex by remember { mutableStateOf(0) }
-    val shopList = groceryViewModel.shops.observeAsState(initial = emptyList())
     Column(
         modifier = Modifier
             .fillMaxHeight()
@@ -191,10 +192,11 @@ fun AddGroceryComposable(groceryViewModel: AddGroceryViewModel = hiltViewModel()
             },
             label = { Text("Enter product") },
             isError = textError,
+            modifier = Modifier.testTag("productTextField")
         )
-        if (shopList.value.isNotEmpty()) {
+        if (shopList.isNotEmpty()) {
             ShopPickerComposable(
-                shopList = shopList.value,
+                shopList = shopList,
                 { expanded = it },
                 expanded,
                 { selectedIndex = it },
@@ -203,12 +205,12 @@ fun AddGroceryComposable(groceryViewModel: AddGroceryViewModel = hiltViewModel()
         }
         Button(onClick = {
             if (text.text.isNotEmpty()) {
-                val shop = shopList.value.getOrNull(selectedIndex)
+                val shop = shopList.getOrNull(selectedIndex)
                 val item = GroceryModel(
                     product = text.text,
                     shop = shop?.id
                 )
-                groceryViewModel.addGrocery(item)
+                onAddGrocery.invoke(item)
             } else {
                 textError = true
             }
@@ -253,7 +255,7 @@ fun ShopPickerComposable(
                         onExpand.invoke(false)
                     },
                 ) {
-                    SimpleRow(title = s.shop,Modifier)
+                    SimpleRow(title = s.shop, Modifier)
                 }
             }
         }

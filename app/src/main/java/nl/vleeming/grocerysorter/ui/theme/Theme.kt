@@ -59,14 +59,14 @@ fun GrocerySorterTheme(
 fun GroceryItemPreview() {
     GrocerySorterTheme {
         GroceryListScreen(
-            navController = rememberNavController(),
+//            navController = rememberNavController(),
             groceryList =
             listOf(
                 GroceryModel(0, "Brood"),
                 GroceryModel(0, "Melk"),
                 GroceryModel(0, "Tofu"),
                 GroceryModel(0, "Kaas")
-            )
+            ),{_,_ -> },{}
         )
     }
 

@@ -16,13 +16,13 @@ import androidx.navigation.compose.rememberNavController
 import nl.vleeming.grocerysorter.ui.theme.GrocerySorterTheme
 
 @Composable
-fun AddProductPrompt(navController: NavController) {
+fun AddProductPrompt(onNavigateToAddProduct: () -> Unit) {
     Column(modifier = Modifier.testTag("addProductPromptScreen").fillMaxSize(),
     verticalArrangement = Arrangement.Center,
     horizontalAlignment = Alignment.CenterHorizontally) {
         Icon(Icons.Default.AddShoppingCart, contentDescription = "Add shopping cart")
         Text( "There are no items in your list")
-        TextButton(onClick = { navController.navigate(DrawerScreens.AddGrocery.route) }) {
+        TextButton(onClick = { onNavigateToAddProduct() }) {
             Text(text = "Add items")
         }
         
@@ -32,9 +32,9 @@ fun AddProductPrompt(navController: NavController) {
 @Preview(showBackground = true)
 @Composable
 fun AddProductPromptPreview() {
-    val navController = rememberNavController()
+
     GrocerySorterTheme {
-        AddProductPrompt(navController)
+        AddProductPrompt {}
     }
     
 }

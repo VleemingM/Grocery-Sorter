@@ -10,9 +10,11 @@ import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import dagger.hilt.android.testing.UninstallModules
+import junit.framework.Assert.assertFalse
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.test.runBlockingTest
+import nl.vleeming.grocerysorter.database.model.GroceryModel
 import nl.vleeming.grocerysorter.database.model.ShopModel
 import nl.vleeming.grocerysorter.database.repository.GroceryRepository
 import nl.vleeming.grocerysorter.database.repository.GroceryRepositoryImpl
@@ -27,98 +29,54 @@ import org.junit.Test
 import org.mockito.Mockito
 
 
-@HiltAndroidTest
-@UninstallModules(RepositoryModule::class)
 class AddProductScreenTest {
-
-    lateinit var viewModel: AddGroceryViewModel
 
     @get:Rule(order = 2)
     val composeTestRule = createComposeRule()
 
-    @get:Rule(order = 1)
-    var hiltRule = HiltAndroidRule(this)
-
-    @BindValue
-    @JvmField
-    val groceryRepository: GroceryRepository = mock<GroceryRepositoryImpl>()
-
-    @BindValue
-    @JvmField
-    val shopRepository: ShopRepository = mock<ShopRepositoryImpl>()
-
     @Before
-    fun setup() {
-        hiltRule.inject()
+    fun setup(){
     }
-
 
     @Test
     fun WhenNoShopsAreProvidedDontShowShopSelector() {
-        Mockito.`when`(groceryRepository.getAllGroceries()).thenReturn(flow {
-            emit(emptyList())
-        })
-        Mockito.`when`(shopRepository.getAllShops()).thenReturn(flow {
-            emit(emptyList())
-        })
-        viewModel = AddGroceryViewModel(groceryRepository, shopRepository)
-
         composeTestRule.setContent {
-            AddGroceryComposable(viewModel)
+            AddGroceryComposable(emptyList(),{})
         }
         composeTestRule.onNodeWithTag("ShopPickerTag").assertDoesNotExist()
     }
 
     @Test
-    fun WhenShopsAreAvailableShowShopSelector() {
-        Mockito.`when`(groceryRepository.getAllGroceries()).thenReturn(flow {
-            emit(emptyList())
-        })
-        Mockito.`when`(shopRepository.getAllShops()).thenReturn(flow {
-            emit(listOf(ShopModel(1, "bol.com")))
-        })
-        viewModel = AddGroceryViewModel(groceryRepository, shopRepository)
+    fun when_shops_are_available_show_show_selector() {
+        val addItem : (GroceryModel) -> Unit = mock()
         composeTestRule.setContent {
-            AddGroceryComposable(viewModel)
+            AddGroceryComposable(listOf(ShopModel(1, "bol.com")), addItem)
         }
         composeTestRule.onNodeWithTag("ShopPickerTag").assertIsDisplayed()
     }
 
-    @OptIn(ExperimentalCoroutinesApi::class)
-    @Test
-    fun WhenSaveIsClickedWithoutANameDontAddToDatabase() {
-        Mockito.`when`(groceryRepository.getAllGroceries()).thenReturn(flow {
-            emit(emptyList())
-        })
 
-        Mockito.`when`(shopRepository.getAllShops()).thenReturn(flow {
-            emit(listOf(ShopModel(1, "bol.com")))
-        })
-        whenever(runBlockingTest { groceryRepository.insertGroceries(any())}).thenThrow(IllegalAccessError())
-        viewModel = AddGroceryViewModel(groceryRepository, shopRepository)
+    @Test
+    fun when_save_is_clicked_without_text_dont_call_add_item(){
+        var called = false
+
         composeTestRule.setContent {
-            AddGroceryComposable(viewModel)
+            AddGroceryComposable(emptyList()) { called = true }
         }
         composeTestRule.onNodeWithTag("saveButton").performClick()
+        assertFalse(called)
     }
 
     @Test
-    fun WhenSaveIsClickedWithOnlyANameForProductSaveToDatabase() {
-        Mockito.`when`(groceryRepository.getAllGroceries()).thenReturn(flow {
-            emit(emptyList())
-        })
+    fun WhenSaveIsClickedWithOnlyANameForProductCallAddItem() {
+        val addItem : (GroceryModel) -> Unit = mock()
 
-        Mockito.`when`(shopRepository.getAllShops()).thenReturn(flow {
-            emit(listOf(ShopModel(1, "bol.com")))
-        })
-
-        viewModel = AddGroceryViewModel(groceryRepository,shopRepository)
         composeTestRule.setContent {
-            AddGroceryComposable(viewModel)
+            AddGroceryComposable(emptyList(), addItem)
         }
         composeTestRule.onNodeWithTag("productTextField").performTextInput("boter")
         composeTestRule.onNodeWithTag("saveButton").performClick()
-        runBlockingTest { verify(groceryRepository, atLeastOnce()).insertGroceries(any())}
+        verify(addItem, atLeastOnce())
     }
 
 }

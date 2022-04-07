@@ -9,9 +9,12 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.runtime.*
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import androidx.navigation.NavDestination
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -21,6 +24,7 @@ import kotlinx.coroutines.launch
 import nl.vleeming.grocerysorter.database.model.GroceryModel
 import nl.vleeming.grocerysorter.screen.*
 import nl.vleeming.grocerysorter.ui.theme.GrocerySorterTheme
+import nl.vleeming.grocerysorter.viewmodel.AddGroceryViewModel
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -48,84 +52,106 @@ fun DefaultPreview() {
     groceryList.add(GroceryModel(product = "Kattenvoer"))
     groceryList.add(GroceryModel(product = "iets anders"))
     Scaffold(
-        content = { GroceryListScreen(rememberNavController(),groceryList = groceryList) }
+        content = { GroceryListScreen(groceryList = groceryList, { _, _ -> }, {}) }
     )
-
 }
 
 
 @OptIn(ExperimentalPagerApi::class)
 @Composable
-fun MainScreen() {
+fun MainScreen(viewModel: AddGroceryViewModel = hiltViewModel()) {
     val navController = rememberNavController()
-    val openAddItemDialog = remember {
+    val showAddItemFab = remember {
         mutableStateOf(false)
     }
-    Surface(color = MaterialTheme.colors.background) {
-        val drawerState = rememberDrawerState(DrawerValue.Closed)
-        val scope = rememberCoroutineScope()
-        val openDrawer = {
-            scope.launch {
-                drawerState.open()
-            }
+    navController.addOnDestinationChangedListener { _, destination, _ ->
+        showAddItemFab.value = destination.route?.let {
+            DrawerScreens.getDrawerScreenForRoute(it)?.shouldShowAddItemFab
+        } ?: true
+    }
+    val drawerState = rememberDrawerState(DrawerValue.Closed)
+    val scope = rememberCoroutineScope()
+    val openDrawer = {
+        scope.launch {
+            drawerState.open()
         }
-        ModalDrawer(
-            drawerState = drawerState,
-            gesturesEnabled = drawerState.isOpen,
-            drawerContent = {
-                DrawerScreen(
-                    onDestinationClicked = { route ->
-                        scope.launch {
-                            drawerState.close()
-                        }
-                        navController.navigate(route) {
-                            popUpTo(navController.graph.startDestinationId)
-                            launchSingleTop = true
-                        }
+    }
+
+    val shopList = viewModel.shops.observeAsState(listOf())
+    val groceryList = viewModel.groceries.observeAsState(listOf())
+    ModalDrawer(
+        drawerState = drawerState,
+        gesturesEnabled = drawerState.isOpen,
+        drawerContent = {
+            DrawerScreen(
+                onDestinationClicked = { route ->
+                    scope.launch {
+                        drawerState.close()
                     }
-                )
-            }
-        ) {
-            Scaffold(
-                topBar = {
-                    Column {
-                        TopBar(
-                            title = "Groceries",
-                            buttonIcon = Icons.Filled.Menu,
-                            onButtonClicked = { openDrawer() }
-                        )
-                    }
-                },
-                floatingActionButton = {
-                    AddItemFab(
-                        navController = navController,
-                    )
-                },
-                content = {
-                    NavHost(
-                        navController = navController,
-                        startDestination = DrawerScreens.AddShop.route
-                    ) {
-                        composable(DrawerScreens.Groceries.route) {
-                            GroceryScreen(navController = navController)
-                        }
-                        composable(DrawerScreens.Shop.route) {
-                            ShopScreen()
-                        }
-                        composable(DrawerScreens.AddGrocery.route) {
-                            AddGroceryComposable()
-                        }
-                        composable(DrawerScreens.AddShop.route) {
-                            AddShopComposable()
-                        }
+                    navController.navigate(route) {
+                        popUpTo(navController.graph.startDestinationId)
+                        launchSingleTop = true
                     }
                 }
             )
-
         }
-    }
-}
+    ) {
+        Scaffold(
+            topBar = {
+                Column {
+                    TopBar(
+                        title = "Groceries",
+                        buttonIcon = Icons.Filled.Menu,
+                        onButtonClicked = { openDrawer() }
+                    )
+                }
+            },
+            floatingActionButton = {
+                navController.currentDestination?.route?.let {
+                    if (showAddItemFab.value) {
+                        AddItemFab(
+                            navController = navController,
+                        )
+                    }
+                }
 
+            },
+            content = {
+                NavHost(
+                    navController = navController,
+                    startDestination = DrawerScreens.Groceries.route
+                ) {
+                    composable(DrawerScreens.Groceries.route) {
+                        GroceryScreen(
+                            shopList = shopList.value,
+                            groceryList = groceryList.value,
+                            onNavigateToAddProduct = { navController.navigate(DrawerScreens.AddGrocery.route) },
+                            onGroceryItemChecked = { groceryModel ->
+                                viewModel.deleteGrocery(
+                                    groceryModel
+                                )
+                            })
+                    }
+                    composable(DrawerScreens.Shop.route) {
+                        ShopScreen()
+                    }
+                    composable(DrawerScreens.AddGrocery.route) {
+                        AddGroceryComposable(
+                            shopList.value,
+                        ) { groceryItem ->
+                            viewModel.addGrocery(groceryItem)
+                        }
+                    }
+                    composable(DrawerScreens.AddShop.route) {
+                        AddShopComposable()
+                    }
+                }
+            }
+        )
+
+    }
+
+}
 
 
 @Composable

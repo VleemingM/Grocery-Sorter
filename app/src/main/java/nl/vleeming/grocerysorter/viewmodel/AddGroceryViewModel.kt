@@ -1,5 +1,6 @@
 package nl.vleeming.grocerysorter.viewmodel
 
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.lifecycle.*
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -24,6 +25,7 @@ class AddGroceryViewModel @Inject constructor(
         }
     }
 
+
     fun getGroceriesForShopId(id: Int): LiveData<List<GroceryModel>> {
         return groceryRepositoryImpl.getGroceriesForShop(id).asLiveData()
     }
@@ -39,8 +41,7 @@ class AddGroceryViewModel @Inject constructor(
             groceryRepositoryImpl.deleteGroceries(groceryModel)
         }
     }
-
-    val groceries = groceryRepositoryImpl.getAllGroceries().asLiveData()
+    var groceries = groceryRepositoryImpl.getAllGroceries().asLiveData()
     val shops = shopRepository.getAllShops().asLiveData()
 
 }

@@ -16,11 +16,22 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.NavDestination
 
-sealed class DrawerScreens(val title: String, val route: String) {
-    object Groceries : DrawerScreens("Groceries","groceries")
-    object AddGrocery : DrawerScreens("Add Grocery","addGrocery")
-    object Shop : DrawerScreens("Shop","shop")
-    object AddShop : DrawerScreens("Add Shop","addShop")
+enum class DrawerScreens(val title: String, val route: String, val shouldShowAddItemFab: Boolean) {
+    Groceries("Groceries", "groceries", true),
+    AddGrocery("Add Grocery", "addGrocery", false),
+    Shop("Shop", "shop", true),
+    AddShop("Add Shop", "addShop", false);
+
+    companion object {
+        fun getDrawerScreenForRoute(route: String): DrawerScreens? {
+            values().forEach {
+                if (it.route == route) {
+                    return it
+                }
+            }
+            return null
+        }
+    }
 }
 
 private val screens = listOf(
@@ -50,7 +61,7 @@ fun DrawerScreen(
     Text("Groceries", modifier = Modifier.padding(16.dp))
     Divider()
 
-    screens.forEach{ screen->
+    screens.forEach { screen ->
         Spacer(Modifier.height(24.dp))
         Text(
             text = screen.title,

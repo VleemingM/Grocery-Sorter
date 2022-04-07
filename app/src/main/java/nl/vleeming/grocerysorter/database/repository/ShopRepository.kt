@@ -5,15 +5,12 @@ import nl.vleeming.grocerysorter.database.dao.ShopDao
 import nl.vleeming.grocerysorter.database.model.ShopModel
 import javax.inject.Inject
 
-class ShopRepository @Inject constructor(private val shopDao: ShopDao) {
-    suspend fun insertShop(shopModel: ShopModel) =
-        shopDao.insertShop(shopModel)
+interface ShopRepository {
+    suspend fun insertShop(shopModel: ShopModel)
 
-    suspend fun updateShop(shopModel: ShopModel) =
-        shopDao.updateShop(shopModel)
+    suspend fun updateShop(shopModel: ShopModel)
 
-    suspend fun deleteShop(shopModel: ShopModel) =
-        shopDao.deleteShop(shopModel)
+    suspend fun deleteShop(shopModel: ShopModel)
 
-    fun getAllShops(): Flow<List<ShopModel>> = shopDao.getAllShops()
+    fun getAllShops(): Flow<List<ShopModel>>
 }

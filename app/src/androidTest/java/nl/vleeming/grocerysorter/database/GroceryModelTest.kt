@@ -7,7 +7,6 @@ import androidx.room.Room
 import androidx.test.core.app.ActivityScenario.launch
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import junit.framework.Assert.assertEquals
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.take
@@ -17,6 +16,7 @@ import kotlinx.coroutines.runBlocking
 import nl.vleeming.grocerysorter.database.dao.GroceryDao
 import nl.vleeming.grocerysorter.database.model.GroceryModel
 import org.junit.After
+import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith

@@ -25,11 +25,6 @@ class AddGroceryViewModel @Inject constructor(
         }
     }
 
-
-    fun getGroceriesForShopId(id: Int): LiveData<List<GroceryModel>> {
-        return groceryRepositoryImpl.getGroceriesForShop(id).asLiveData()
-    }
-
     fun addShop(shopModel: ShopModel) {
         viewModelScope.launch(Dispatchers.IO) {
             shopRepository.insertShop(shopModel)

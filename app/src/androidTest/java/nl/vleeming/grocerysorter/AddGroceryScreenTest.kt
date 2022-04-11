@@ -29,7 +29,7 @@ import org.junit.Test
 import org.mockito.Mockito
 
 
-class AddProductScreenTest {
+class AddGroceryScreenTest {
 
     @get:Rule(order = 2)
     val composeTestRule = createComposeRule()
@@ -78,5 +78,6 @@ class AddProductScreenTest {
         composeTestRule.onNodeWithTag("saveButton").performClick()
         verify(addItem, atLeastOnce())
     }
+
 
 }
